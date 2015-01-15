@@ -10,6 +10,10 @@
 
 #import "GameMark.h"
 
+@interface Game ()
+@property (nonatomic, strong) GameBoard *board;
+@end
+
 @implementation Game
 
 - (instancetype)init
@@ -30,25 +34,23 @@
     self.board = [GameBoard new];
 }
 
-- (void)pressedSquare:(NSInteger)index
+- (void)moveMadeAtIndex:(NSInteger)index
 {
-    if (![self.board.moves[index] isEqual:[GameMark none]]) {
+    if ([self.board containsValidMarkAtIndex:index]) {
         return;
     }
 
     if (self.board.currentGameState == GameState_XTurn) {
         GameMark *x = [GameMark x];
-        self.board.moves[index] = x;
-        [self.delegate squareMarked:x atPosition:index];
-        self.board.currentGameState = GameState_OTurn;
+        [self.board placeMark:x atIndex:index];
+        [self.delegate addMark:x atIndex:index];
         [self checkForGameOver];
 
         [self computerTakesTurn];
     } else if (self.board.currentGameState == GameState_OTurn) {
         GameMark *o = [GameMark o];
-        self.board.moves[index] = o;
-        [self.delegate squareMarked:o atPosition:index];
-        self.board.currentGameState = GameState_XTurn;
+        [self.board placeMark:o atIndex:index];
+        [self.delegate addMark:o atIndex:index];
         [self checkForGameOver];
     }
 }
@@ -67,8 +69,7 @@
 
     for (NSNumber *move in availableMoves) {
         GameBoard *clonedBoard = [self.board copy];
-        clonedBoard.moves[[move integerValue]] = [GameMark o];
-        clonedBoard.currentGameState = GameState_XTurn;
+        [clonedBoard placeMark:[GameMark o] atIndex:[move integerValue]];
         NSInteger currentScore = [self miniMax:clonedBoard];
         [scores addObject:@(currentScore)];
         [moves addObject:move];
@@ -77,7 +78,7 @@
     possibleOutcomes = @[scores, moves];
 
     NSInteger bestMove = [self determineBestMove:possibleOutcomes];
-    [self pressedSquare:bestMove];
+    [self moveMadeAtIndex:bestMove];
 }
 
 #define SCORES_INDEX 0
@@ -130,15 +131,13 @@
         GameBoard *clonedBoard = [board copy];
 
         if (board.currentGameState == GameState_XTurn) {
-            clonedBoard.moves[[move integerValue]] = [GameMark x];
-            clonedBoard.currentGameState = GameState_OTurn;
+            [clonedBoard placeMark:[GameMark x] atIndex:[move integerValue]];
             NSInteger currentScore = [self miniMax:clonedBoard];
             if (currentScore < bestScore) {
                 bestScore = currentScore;
             }
         } else if (board.currentGameState == GameState_OTurn) {
-            clonedBoard.moves[[move integerValue]] = [GameMark o];
-            clonedBoard.currentGameState = GameState_XTurn;
+            [clonedBoard placeMark:[GameMark o] atIndex:[move integerValue]];
             NSInteger currentScore = [self miniMax:clonedBoard];
             if (currentScore > bestScore) {
                 bestScore = currentScore;

@@ -16,15 +16,17 @@ typedef NS_ENUM(NSUInteger, GameState) {
     GameState_Tie
 };
 
+@class GameMark;
+
 @interface GameBoard : NSObject <NSCopying>
 
-@property (nonatomic, strong) NSMutableArray *moves;
 @property (nonatomic, assign) GameState currentGameState;
 
+- (NSArray *)availableMoves;
 - (BOOL)allMovesTaken;
 - (void)updateGameStateForWin;
-- (NSArray *)availableMoves;
 - (NSString *)marksAtIndicies:(NSArray *)indicies;
-
+- (BOOL)containsValidMarkAtIndex:(NSInteger)index;
+- (void)placeMark:(GameMark *)mark atIndex:(NSInteger)index;
 
 @end

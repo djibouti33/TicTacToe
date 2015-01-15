@@ -10,6 +10,11 @@
 
 #import "GameMark.h"
 
+@interface GameBoard ()
+@property (nonatomic, strong) NSMutableArray *moves;
+
+@end
+
 @implementation GameBoard
 
 - (instancetype)init
@@ -119,6 +124,17 @@
     if ([self allMovesTaken]) {
         self.currentGameState = GameState_Tie;
     }
+}
+
+- (BOOL)containsValidMarkAtIndex:(NSInteger)index
+{
+    return ![self.moves[index] isEqual:[GameMark none]];
+}
+
+- (void)placeMark:(GameMark *)mark atIndex:(NSInteger)index
+{
+    self.moves[index] = mark;
+    self.currentGameState = ( self.currentGameState == GameState_XTurn ? GameState_OTurn : GameState_XTurn );
 }
 
 @end

@@ -13,16 +13,14 @@
 @class GameMark;
 
 @protocol GameDelegate <NSObject>
-- (void)squareMarked:(GameMark *)mark atPosition:(NSInteger)position;
-
+- (void)addMark:(GameMark *)mark atIndex:(NSInteger)index;
 @end
 
 @interface Game : NSObject
 
-@property (nonatomic, strong) GameBoard *board;
 @property (nonatomic, assign) id<GameDelegate> delegate;
 
-- (void)pressedSquare:(NSInteger)index;
+- (void)moveMadeAtIndex:(NSInteger)index;
 - (void)resetGame;
 
 @end

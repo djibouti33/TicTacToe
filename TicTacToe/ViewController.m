@@ -38,7 +38,7 @@
 
 - (IBAction)buttonPressed:(UIButton *)sender
 {
-    [self.game pressedSquare:sender.tag];
+    [self.game moveMadeAtIndex:sender.tag];
 }
 
 - (IBAction)resetGame:(UIBarButtonItem *)sender
@@ -52,9 +52,9 @@
 
 #pragma mark - GameDelegate
 
-- (void)squareMarked:(GameMark *)mark atPosition:(NSInteger)position
+- (void)addMark:(GameMark *)mark atIndex:(NSInteger)index
 {
-    UIButton *button = self.buttons[position];
+    UIButton *button = self.buttons[index];
     [button setTitle:mark.description forState:UIControlStateNormal];
 }
 
