@@ -68,7 +68,8 @@
     for (NSNumber *move in availableMoves) {
         GameBoard *clonedBoard = [self.board copy];
         clonedBoard.moves[[move integerValue]] = [GameMark o];
-        NSInteger currentScore = [self min:clonedBoard];
+        clonedBoard.currentGameState = GameState_XTurn;
+        NSInteger currentScore = [self miniMax:clonedBoard];
         [scores addObject:@(currentScore)];
         [moves addObject:move];
     }
@@ -101,72 +102,7 @@
     return bestMove;
 }
 
-//- (NSInteger)miniMax:(NSMutableArray *)board
-//{
-//    NSArray *xWinMarks;
-//    NSArray *oWinMarks;
-//
-//    if (!xWinMarks) {
-//        xWinMarks = @[ @(GameMark_X), @(GameMark_X), @(GameMark_X)];
-//    }
-//
-//    if (!oWinMarks) {
-//        oWinMarks = @[ @(GameMark_O), @(GameMark_O), @(GameMark_O)];
-//    }
-//
-//    NSMutableArray *possibleWins = [NSMutableArray new];
-//
-//    // row wins
-//    [possibleWins addObject:@[ @(0), @(1), @(2) ]];
-//    [possibleWins addObject:@[ @(3), @(4), @(5) ]];
-//    [possibleWins addObject:@[ @(6), @(7), @(8) ]];
-//
-//    // column wins
-//    [possibleWins addObject:@[ @(0), @(3), @(6) ]];
-//    [possibleWins addObject:@[ @(1), @(4), @(7) ]];
-//    [possibleWins addObject:@[ @(2), @(5), @(8) ]];
-//
-//    // diagonal wins
-//    [possibleWins addObject:@[ @(0), @(4), @(8) ]];
-//    [possibleWins addObject:@[ @(2), @(4), @(6) ]];
-//
-//    for (NSArray *possibleWin in possibleWins) {
-//        if ([[self getMarksAtIndicies:possibleWin forBoard:board] isEqualToArray:oWinMarks]) {
-//            return 10;
-//        } else if ([[self getMarksAtIndicies:possibleWin forBoard:board] isEqualToArray:xWinMarks]) {
-//            return -10;
-//        }
-//    }
-//
-//    if (![board containsObject:@(GameMark_None)]) {
-//        return 0;
-//    }
-//
-//    NSArray *availableMoves = [self getAvailableMovesForBoard:board];
-//    NSInteger bestScore = self.currentGameState == GameState_XTurn ? NSIntegerMax : NSIntegerMin;
-//
-//    for (NSNumber *move in availableMoves) {
-//        NSMutableArray *clonedBoard = [board mutableCopy];
-//
-//        if (self.currentGameState == GameState_XTurn) {
-//            clonedBoard[[move integerValue]] = @(GameMark_X);
-//            NSInteger currentScore = [self miniMax:clonedBoard];
-//            if (currentScore < bestScore) {
-//                bestScore = currentScore;
-//            }
-//        } else if (self.currentGameState == GameState_OTurn) {
-//            clonedBoard[[move integerValue]] = @(GameMark_O);
-//            NSInteger currentScore = [self miniMax:clonedBoard];
-//            if (currentScore > bestScore) {
-//                bestScore = currentScore;
-//            }
-//        }
-//    }
-//
-//    return bestScore;
-//}
-
-- (NSInteger)min:(GameBoard *)board
+- (NSInteger)miniMax:(GameBoard *)board
 {
     [board updateGameStateForWin];
 
@@ -188,54 +124,28 @@
     }
 
     NSArray *availableMoves = [board availableMoves];
-    NSInteger bestScore = NSIntegerMax;
+    NSInteger bestScore = ( board.currentGameState == GameState_XTurn ? NSIntegerMax : NSIntegerMin );
 
     for (NSNumber *move in availableMoves) {
         GameBoard *clonedBoard = [board copy];
-        clonedBoard.moves[[move integerValue]] = [GameMark x];
-        NSInteger currentScore = [self max:clonedBoard];
 
-        if (currentScore < bestScore) {
-            bestScore = currentScore;
+        if (board.currentGameState == GameState_XTurn) {
+            clonedBoard.moves[[move integerValue]] = [GameMark x];
+            clonedBoard.currentGameState = GameState_OTurn;
+            NSInteger currentScore = [self miniMax:clonedBoard];
+            if (currentScore < bestScore) {
+                bestScore = currentScore;
+            }
+        } else if (board.currentGameState == GameState_OTurn) {
+            clonedBoard.moves[[move integerValue]] = [GameMark o];
+            clonedBoard.currentGameState = GameState_XTurn;
+            NSInteger currentScore = [self miniMax:clonedBoard];
+            if (currentScore > bestScore) {
+                bestScore = currentScore;
+            }
         }
     }
-    
-    return bestScore;
-}
 
-- (NSInteger)max:(GameBoard *)board
-{
-    [board updateGameStateForWin];
-
-    switch (board.currentGameState) {
-        case GameState_XWin:
-            return -10;
-            break;
-
-        case GameState_OWin:
-            return 10;
-            break;
-
-        case GameState_Tie:
-            return 0;
-            break;
-
-        default:
-            break;
-    }
-
-    NSArray *availableMoves = [board availableMoves];
-    NSInteger bestScore = NSIntegerMin;
-
-    for (NSNumber *move in availableMoves) {
-        GameBoard *clonedBoard = [board copy];
-        clonedBoard.moves[[move integerValue]] = [GameMark o];
-        NSInteger currentScore = [self min:clonedBoard];
-        if (currentScore > bestScore) {
-            bestScore = currentScore;
-        }
-    }
-    
     return bestScore;
 }
 
