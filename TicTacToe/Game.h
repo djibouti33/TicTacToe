@@ -16,14 +16,10 @@ typedef NS_ENUM(NSUInteger, GameState) {
     GameState_Tie
 };
 
-typedef NS_ENUM(NSUInteger, GameMark) {
-    GameMark_X,
-    GameMark_O,
-    GameMark_None,
-};
+@class GameMark;
 
 @protocol GameDelegate <NSObject>
-- (void)squareMarked:(NSInteger)mark atPosition:(NSInteger)position;
+- (void)squareMarked:(GameMark *)mark atPosition:(NSInteger)position;
 
 @end
 
@@ -34,8 +30,7 @@ typedef NS_ENUM(NSUInteger, GameMark) {
 @property (nonatomic, assign) id<GameDelegate> delegate;
 
 - (void)pressedSquare:(NSInteger)index;
-- (BOOL)isBoardEmpty;
-- (NSMutableArray *)resetBoard;
+- (NSMutableArray *)newBoard;
 
 
 @end

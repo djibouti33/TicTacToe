@@ -78,4 +78,20 @@
     }
 }
 
+- (BOOL)isEqual:(id)other
+{
+    if (other == self) {
+        return true;
+    } else if (![other isKindOfClass:[GameMark class]]) {
+        return false;
+    } else {
+        return [self isEqualToGameMark:(GameMark *)other];
+    }
+}
+
+- (BOOL)isEqualToGameMark:(GameMark *)mark
+{
+    return [self.description isEqualToString:mark.description];
+}
+
 @end

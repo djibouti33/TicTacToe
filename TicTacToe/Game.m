@@ -8,12 +8,7 @@
 
 #import "Game.h"
 
-#define SCORES_INDEX 0
-#define POSITIONS_INDEX 1
-
-@interface Game ()
-@property (nonatomic, assign) NSInteger depth;
-@end
+#import "GameMark.h"
 
 @implementation Game
 
@@ -25,235 +20,211 @@
         return nil;
     }
 
-//    _currentGameState = GameState_XTurn;
-
-    _board = [self resetBoard];
-    _depth = 0;
+    _board = [self newBoard];
 
     return self;
 }
 
-- (BOOL)isBoardEmpty
+- (BOOL)isBoardFilled:(NSArray *)board
 {
-    for (int i = 0; i < self.board.count - 1; i++) {
-        if (![[self.board objectAtIndex:i] isEqualToNumber:[self.board lastObject]]) {
-            return false;
-        }
-    }
-    return true;
-}
-
-- (BOOL)isBoardFilled
-{
-    if ([self.board containsObject:@(GameMark_None)]) {
-        return false;
-    }
-
-    return true;
+    return ![self.board containsObject:[GameMark none]];
 }
 
 - (NSArray *)getAvailableMovesForBoard:(NSArray *)board
 {
-    NSMutableArray *tempArray = [NSMutableArray new];
-    [board enumerateObjectsUsingBlock:^(NSNumber *position, NSUInteger idx, BOOL *stop) {
-        if ([position isEqualToNumber:@(GameMark_None)]) {
-            [tempArray addObject:@(idx)];
+    NSMutableArray *availableMoves = [NSMutableArray new];
+
+    [board enumerateObjectsUsingBlock:^(GameMark *position, NSUInteger idx, BOOL *stop) {
+        if ([position isEqual:[GameMark none]]) {
+            [availableMoves addObject:@(idx)];
         }
     }];
 
-    return tempArray;
+    return availableMoves;
 }
 
-- (NSMutableArray *)resetBoard
+- (NSMutableArray *)newBoard
 {
-    NSMutableArray *tempBoard = [NSMutableArray new];
-    for (int i = 0; i < 9; i++) {
-        tempBoard[i] = @(GameMark_None);
+    NSMutableArray *board = [NSMutableArray new];
+
+    for (int idx = 0; idx < 9; idx++) {
+        board[idx] = [GameMark none];
     }
 
     self.currentGameState = GameState_XTurn;
 
-    return tempBoard;
+    return board;
 }
 
 - (void)pressedSquare:(NSInteger)index
 {
-    if (![self.board[index] isEqual: @(GameMark_None)]) {
+    if (![self.board[index] isEqual:[GameMark none]]) {
         return;
     }
 
     if (self.currentGameState == GameState_XTurn) {
-        self.board[index] = @(GameMark_X);
-        [self.delegate squareMarked:GameMark_X atPosition:index];
+        GameMark *x = [GameMark x];
+        self.board[index] = x;
+        [self.delegate squareMarked:x atPosition:index];
         self.currentGameState = GameState_OTurn;
         [self checkForGameOver];
 
-        [self computerMakesMove];
+        [self computerTakesTurn];
     } else if (self.currentGameState == GameState_OTurn) {
-        self.board[index] = @(GameMark_O);
-        [self.delegate squareMarked:GameMark_O atPosition:index];
+        GameMark *o = [GameMark o];
+        self.board[index] = o;
+        [self.delegate squareMarked:o atPosition:index];
         self.currentGameState = GameState_XTurn;
         [self checkForGameOver];
     }
 }
 
-- (NSInteger)computerMakesMove
+- (void)computerTakesTurn
 {
-#warning lame to return 0 up top and at the bottom of this method
     if (self.currentGameState != GameState_OTurn) {
-        return 0;
+        return;
     }
 
-    NSArray *availableMoves = [self getAvailableMovesForBoard:self.board];
-    NSMutableArray *scoresAndMoves = [NSMutableArray new];
+    NSArray *possibleOutcomes = [NSArray new];
     NSMutableArray *scores = [NSMutableArray new];
     NSMutableArray *moves = [NSMutableArray new];
 
-    for (NSNumber *move in availableMoves) {
+    NSArray *availableMoves = [self getAvailableMovesForBoard:self.board];
 
+    for (NSNumber *move in availableMoves) {
         NSMutableArray *clonedBoard = [self.board mutableCopy];
-        clonedBoard[[move integerValue]] = @(GameMark_O);
+        clonedBoard[[move integerValue]] = [GameMark o];
         NSInteger currentScore = [self min:clonedBoard];
-        [scores addObject:[NSNumber numberWithInteger:currentScore]];
+        [scores addObject:@(currentScore)];
         [moves addObject:move];
-        self.depth = 0;
     }
 
-    scoresAndMoves[0] = scores;
-    scoresAndMoves[1] = moves;
+    possibleOutcomes = @[scores, moves];
 
-    NSInteger bestMove = [self determineBestMove:scoresAndMoves];
+    NSInteger bestMove = [self determineBestMove:possibleOutcomes];
     [self pressedSquare:bestMove];
-
-    return 0;
 }
 
 #warning need to clean up and be more clear about moves vs. positions (determineBestMove, scoresAndPositions, etc.)
 
-- (NSInteger)determineBestMove:(NSMutableArray *)scoresAndMoves
+#define SCORES_INDEX 0
+#define MOVES_INDEX 1
+
+- (NSInteger)determineBestMove:(NSArray *)possibleOutcomes
 {
-    NSInteger bestIndex = 0;
     NSInteger bestScore = NSIntegerMin;
+    NSInteger bestMove = 0;
 
-    for (NSInteger idx = 0; idx < ((NSMutableArray *)scoresAndMoves[SCORES_INDEX]).count; idx++) {
-        NSInteger integerScore = [scoresAndMoves[SCORES_INDEX][idx] integerValue];
-        if (integerScore > bestScore) {
-            bestScore = integerScore;
-            bestIndex = idx;
+    NSMutableArray *scores = possibleOutcomes[SCORES_INDEX];
+    NSArray *moves = possibleOutcomes[MOVES_INDEX];
+
+    for (NSInteger idx = 0; idx < scores.count; idx++) {
+        NSInteger score = [scores[idx] integerValue];
+        if (score > bestScore) {
+            bestScore = score;
+            bestMove = [moves[idx] integerValue];
         }
     }
 
-    return [scoresAndMoves[POSITIONS_INDEX][bestIndex] integerValue];
+    return bestMove;
 }
 
-- (NSInteger)miniMax:(NSMutableArray *)board
-{
-    self.depth += 1;
-
-    NSArray *xWinMarks;
-    NSArray *oWinMarks;
-
-    if (!xWinMarks) {
-        xWinMarks = @[ @(GameMark_X), @(GameMark_X), @(GameMark_X)];
-    }
-
-    if (!oWinMarks) {
-        oWinMarks = @[ @(GameMark_O), @(GameMark_O), @(GameMark_O)];
-    }
-
-    NSMutableArray *possibleWins = [NSMutableArray new];
-
-    // row wins
-    [possibleWins addObject:@[ @(0), @(1), @(2) ]];
-    [possibleWins addObject:@[ @(3), @(4), @(5) ]];
-    [possibleWins addObject:@[ @(6), @(7), @(8) ]];
-
-    // column wins
-    [possibleWins addObject:@[ @(0), @(3), @(6) ]];
-    [possibleWins addObject:@[ @(1), @(4), @(7) ]];
-    [possibleWins addObject:@[ @(2), @(5), @(8) ]];
-
-    // diagonal wins
-    [possibleWins addObject:@[ @(0), @(4), @(8) ]];
-    [possibleWins addObject:@[ @(2), @(4), @(6) ]];
-
-    for (NSArray *possibleWin in possibleWins) {
-        if ([[self getMarksAtIndicies:possibleWin forBoard:board] isEqualToArray:oWinMarks]) {
-            return 10;
-        } else if ([[self getMarksAtIndicies:possibleWin forBoard:board] isEqualToArray:xWinMarks]) {
-            return -10;
-        }
-    }
-
-    if (![board containsObject:@(GameMark_None)]) {
-        return 0;
-    }
-
-    NSArray *availableMoves = [self getAvailableMovesForBoard:board];
-    NSInteger bestScore = self.currentGameState == GameState_XTurn ? NSIntegerMax : NSIntegerMin;
-
-    for (NSNumber *move in availableMoves) {
-        NSMutableArray *clonedBoard = [board mutableCopy];
-
-        if (self.currentGameState == GameState_XTurn) {
-            clonedBoard[[move integerValue]] = @(GameMark_X);
-            NSInteger currentScore = [self miniMax:clonedBoard];
-            if (currentScore < bestScore) {
-                bestScore = currentScore;
-            }
-        } else if (self.currentGameState == GameState_OTurn) {
-            clonedBoard[[move integerValue]] = @(GameMark_O);
-            NSInteger currentScore = [self miniMax:clonedBoard];
-            if (currentScore > bestScore) {
-                bestScore = currentScore;
-            }
-        }
-    }
-
-    return bestScore;
-}
+//- (NSInteger)miniMax:(NSMutableArray *)board
+//{
+//    NSArray *xWinMarks;
+//    NSArray *oWinMarks;
+//
+//    if (!xWinMarks) {
+//        xWinMarks = @[ @(GameMark_X), @(GameMark_X), @(GameMark_X)];
+//    }
+//
+//    if (!oWinMarks) {
+//        oWinMarks = @[ @(GameMark_O), @(GameMark_O), @(GameMark_O)];
+//    }
+//
+//    NSMutableArray *possibleWins = [NSMutableArray new];
+//
+//    // row wins
+//    [possibleWins addObject:@[ @(0), @(1), @(2) ]];
+//    [possibleWins addObject:@[ @(3), @(4), @(5) ]];
+//    [possibleWins addObject:@[ @(6), @(7), @(8) ]];
+//
+//    // column wins
+//    [possibleWins addObject:@[ @(0), @(3), @(6) ]];
+//    [possibleWins addObject:@[ @(1), @(4), @(7) ]];
+//    [possibleWins addObject:@[ @(2), @(5), @(8) ]];
+//
+//    // diagonal wins
+//    [possibleWins addObject:@[ @(0), @(4), @(8) ]];
+//    [possibleWins addObject:@[ @(2), @(4), @(6) ]];
+//
+//    for (NSArray *possibleWin in possibleWins) {
+//        if ([[self getMarksAtIndicies:possibleWin forBoard:board] isEqualToArray:oWinMarks]) {
+//            return 10;
+//        } else if ([[self getMarksAtIndicies:possibleWin forBoard:board] isEqualToArray:xWinMarks]) {
+//            return -10;
+//        }
+//    }
+//
+//    if (![board containsObject:@(GameMark_None)]) {
+//        return 0;
+//    }
+//
+//    NSArray *availableMoves = [self getAvailableMovesForBoard:board];
+//    NSInteger bestScore = self.currentGameState == GameState_XTurn ? NSIntegerMax : NSIntegerMin;
+//
+//    for (NSNumber *move in availableMoves) {
+//        NSMutableArray *clonedBoard = [board mutableCopy];
+//
+//        if (self.currentGameState == GameState_XTurn) {
+//            clonedBoard[[move integerValue]] = @(GameMark_X);
+//            NSInteger currentScore = [self miniMax:clonedBoard];
+//            if (currentScore < bestScore) {
+//                bestScore = currentScore;
+//            }
+//        } else if (self.currentGameState == GameState_OTurn) {
+//            clonedBoard[[move integerValue]] = @(GameMark_O);
+//            NSInteger currentScore = [self miniMax:clonedBoard];
+//            if (currentScore > bestScore) {
+//                bestScore = currentScore;
+//            }
+//        }
+//    }
+//
+//    return bestScore;
+//}
 
 - (NSInteger)min:(NSMutableArray *)board
 {
-//    NSLog(@"%s", __PRETTY_FUNCTION__);
-    self.depth += 1;
+    NSMutableArray *possibleWins = [
+        @[
+            // row wins
+            @[ @(0), @(1), @(2) ],
+            @[ @(3), @(4), @(5) ],
+            @[ @(6), @(7), @(8) ],
 
-    NSArray *xWinMarks;
-    NSArray *oWinMarks;
+            // column wins
+            @[ @(0), @(3), @(6) ],
+            @[ @(1), @(4), @(7) ],
+            @[ @(2), @(5), @(8) ],
 
-    if (!xWinMarks) {
-        xWinMarks = @[ @(GameMark_X), @(GameMark_X), @(GameMark_X)];
-    }
-
-    if (!oWinMarks) {
-        oWinMarks = @[ @(GameMark_O), @(GameMark_O), @(GameMark_O)];
-    }
-
-    NSMutableArray *possibleWins = [NSMutableArray new];
-
-    // row wins
-    [possibleWins addObject:@[ @(0), @(1), @(2) ]];
-    [possibleWins addObject:@[ @(3), @(4), @(5) ]];
-    [possibleWins addObject:@[ @(6), @(7), @(8) ]];
-
-    // column wins
-    [possibleWins addObject:@[ @(0), @(3), @(6) ]];
-    [possibleWins addObject:@[ @(1), @(4), @(7) ]];
-    [possibleWins addObject:@[ @(2), @(5), @(8) ]];
-
-    // diagonal wins
-    [possibleWins addObject:@[ @(0), @(4), @(8) ]];
-    [possibleWins addObject:@[ @(2), @(4), @(6) ]];
+            // diagonal wins
+            @[ @(0), @(4), @(8) ],
+            @[ @(2), @(4), @(6) ]
+        ] mutableCopy
+    ];
 
     for (NSArray *possibleWin in possibleWins) {
-        if ([[self getMarksAtIndicies:possibleWin forBoard:board] isEqualToArray:oWinMarks]) {
-            return 10;
-        } else if ([[self getMarksAtIndicies:possibleWin forBoard:board] isEqualToArray:xWinMarks]) {
+        NSString *markString = [self getMarksAtIndicies:possibleWin forBoard:board];
+
+        if ([markString isEqualToString:@"XXX"]) {
             return -10;
+        } else if ([markString isEqualToString:@"OOO"]) {
+            return 10;
         }
     }
 
-    if (![board containsObject:@(GameMark_None)]) {
+    if (![board containsObject:[GameMark none]]) {
         return 0;
     }
 
@@ -262,7 +233,7 @@
 
     for (NSNumber *move in availableMoves) {
         NSMutableArray *clonedBoard = [board mutableCopy];
-        clonedBoard[[move integerValue]] = @(GameMark_X);
+        clonedBoard[[move integerValue]] = [GameMark x];
         NSInteger currentScore = [self max:clonedBoard];
 
         if (currentScore < bestScore) {
@@ -275,45 +246,35 @@
 
 - (NSInteger)max:(NSMutableArray *)board
 {
-//    NSLog(@"%s", __PRETTY_FUNCTION__);
-    self.depth += 1;
+    NSMutableArray *possibleWins = [
+        @[
+            // row wins
+            @[ @(0), @(1), @(2) ],
+            @[ @(3), @(4), @(5) ],
+            @[ @(6), @(7), @(8) ],
 
-    NSArray *xWinMarks;
-    NSArray *oWinMarks;
+            // column wins
+            @[ @(0), @(3), @(6) ],
+            @[ @(1), @(4), @(7) ],
+            @[ @(2), @(5), @(8) ],
 
-    if (!xWinMarks) {
-        xWinMarks = @[ @(GameMark_X), @(GameMark_X), @(GameMark_X)];
-    }
-
-    if (!oWinMarks) {
-        oWinMarks = @[ @(GameMark_O), @(GameMark_O), @(GameMark_O)];
-    }
-
-    NSMutableArray *possibleWins = [NSMutableArray new];
-
-    // row wins
-    [possibleWins addObject:@[ @(0), @(1), @(2) ]];
-    [possibleWins addObject:@[ @(3), @(4), @(5) ]];
-    [possibleWins addObject:@[ @(6), @(7), @(8) ]];
-
-    // column wins
-    [possibleWins addObject:@[ @(0), @(3), @(6) ]];
-    [possibleWins addObject:@[ @(1), @(4), @(7) ]];
-    [possibleWins addObject:@[ @(2), @(5), @(8) ]];
-
-    // diagonal wins
-    [possibleWins addObject:@[ @(0), @(4), @(8) ]];
-    [possibleWins addObject:@[ @(2), @(4), @(6) ]];
+            // diagonal wins
+            @[ @(0), @(4), @(8) ],
+            @[ @(2), @(4), @(6) ]
+        ] mutableCopy
+    ];
 
     for (NSArray *possibleWin in possibleWins) {
-        if ([[self getMarksAtIndicies:possibleWin forBoard:board] isEqualToArray:oWinMarks]) {
-            return 10;
-        } else if ([[self getMarksAtIndicies:possibleWin forBoard:board] isEqualToArray:xWinMarks]) {
+        NSString *marksAsString = [self getMarksAtIndicies:possibleWin forBoard:board];
+
+        if ([marksAsString isEqualToString:@"XXX"]) {
             return -10;
+        } else if ([marksAsString isEqualToString:@"OOO"]) {
+            return 10;
         }
     }
 
-    if (![board containsObject:@(GameMark_None)]) {
+    if (![board containsObject:[GameMark none]]) {
         return 0;
     }
 
@@ -322,7 +283,7 @@
 
     for (NSNumber *move in availableMoves) {
         NSMutableArray *clonedBoard = [board mutableCopy];
-        clonedBoard[[move integerValue]] = @(GameMark_O);
+        clonedBoard[[move integerValue]] = [GameMark o];
         NSInteger currentScore = [self min:clonedBoard];
         if (currentScore > bestScore) {
             bestScore = currentScore;
@@ -334,47 +295,36 @@
 
 - (void)checkForGameOver
 {
-    if ([self isBoardFilled]) {
+    if ([self isBoardFilled:self.board]) {
         self.currentGameState = GameState_Tie;
     }
 
-#warning turn these back to static after refactoring
-//    static NSArray *xWinMarks;
-//    static NSArray *oWinMarks;
-    NSArray *xWinMarks;
-    NSArray *oWinMarks;
+    NSMutableArray *possibleWins = [
+        @[
+            // row wins
+            @[ @(0), @(1), @(2) ],
+            @[ @(3), @(4), @(5) ],
+            @[ @(6), @(7), @(8) ],
 
-    if (!xWinMarks) {
-        xWinMarks = @[ @(GameMark_X), @(GameMark_X), @(GameMark_X)];
-    }
+            // column wins
+            @[ @(0), @(3), @(6) ],
+            @[ @(1), @(4), @(7) ],
+            @[ @(2), @(5), @(8) ],
 
-    if (!oWinMarks) {
-        oWinMarks = @[ @(GameMark_O), @(GameMark_O), @(GameMark_O)];
-    }
-
-    NSMutableArray *possibleWins = [NSMutableArray new];
-
-    // row wins
-    [possibleWins addObject:@[ @(0), @(1), @(2) ]];
-    [possibleWins addObject:@[ @(3), @(4), @(5) ]];
-    [possibleWins addObject:@[ @(6), @(7), @(8) ]];
-
-    // column wins
-    [possibleWins addObject:@[ @(0), @(3), @(6) ]];
-    [possibleWins addObject:@[ @(1), @(4), @(7) ]];
-    [possibleWins addObject:@[ @(2), @(5), @(8) ]];
-
-    // diagonal wins
-    [possibleWins addObject:@[ @(0), @(4), @(8) ]];
-    [possibleWins addObject:@[ @(2), @(4), @(6) ]];
+            // diagonal wins
+            @[ @(0), @(4), @(8) ],
+            @[ @(2), @(4), @(6) ]
+        ] mutableCopy
+    ];
 
     for (NSArray *possibleWin in possibleWins) {
-#warning possibly ditch the isEqualToArray and instead convert the array into an NSSet and check for one member
-        if ([[self getMarksAtIndicies:possibleWin forBoard:self.board] isEqualToArray:xWinMarks]) {
+        NSString *marksAsString = [self getMarksAtIndicies:possibleWin forBoard:self.board];
+
+        if ([marksAsString isEqualToString:@"XXX"]) {
             self.currentGameState = GameState_XWin;
             NSLog(@"Game Over! X Wins!");
             return;
-        } else if ([[self getMarksAtIndicies:possibleWin forBoard:self.board] isEqualToArray:oWinMarks]) {
+        } else if ([marksAsString isEqualToString:@"OOO"]) {
             self.currentGameState = GameState_OWin;
             NSLog(@"Game Over! O Wins!");
             return;
@@ -382,23 +332,29 @@
     }
 }
 
-- (NSArray *)getMarksAtIndicies:(NSArray *)indicies forBoard:(NSArray *)board
+//- (GameState)checkWinForBoard:(NSArray *)board
+//{
+//    if (![board containsObject:[GameMark none]]) {
+//        return GameState_Tie;
+//    }
+//
+//
+//}
+
+- (NSString *)getMarksAtIndicies:(NSArray *)indicies forBoard:(NSArray *)board
 {
-    NSMutableArray *marks = [NSMutableArray new];
+    NSMutableString *marksAsString = [NSMutableString new];
 
     for (NSNumber *index in indicies) {
-        NSInteger intIndex = [index integerValue];
+        NSInteger idx = [index integerValue];
 
-        if ([board objectAtIndex:intIndex]) {
-            NSNumber *mark = board[intIndex];
-            [marks addObject:mark];
+        if ([board objectAtIndex:idx]) {
+            GameMark *mark = board[idx];
+            [marksAsString appendString:mark.description];
         }
     }
 
-    NSArray *finalArray = [NSArray arrayWithArray:marks];
-
-    return finalArray;
+    return marksAsString;
 }
-
 
 @end

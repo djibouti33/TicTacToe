@@ -9,6 +9,7 @@
 #import "ViewController.h"
 
 #import "Game.h"
+#import "GameMark.h"
 
 @interface ViewController () <GameDelegate>
 @property (nonatomic, strong) Game *game;
@@ -46,16 +47,15 @@
         [button setTitle:@"Button" forState:UIControlStateNormal];
     }
 
-    [self.game resetBoard];
+    [self.game newBoard];
 }
 
 #pragma mark - GameDelegate
 
-- (void)squareMarked:(NSInteger)mark atPosition:(NSInteger)position
+- (void)squareMarked:(GameMark *)mark atPosition:(NSInteger)position
 {
     UIButton *button = self.buttons[position];
-    NSString *title = mark == GameMark_X ? @"X" : @"O";
-    [button setTitle:title forState:UIControlStateNormal];
+    [button setTitle:mark.description forState:UIControlStateNormal];
 }
 
 @end
