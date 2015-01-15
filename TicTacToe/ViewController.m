@@ -13,6 +13,7 @@
 
 @interface ViewController () <GameDelegate>
 @property (nonatomic, strong) Game *game;
+@property (weak, nonatomic) IBOutlet UILabel *gameStateDescriptionLabel;
 @property (strong, nonatomic) IBOutletCollection(UIButton) NSArray *buttons;
 
 - (IBAction)buttonPressed:(UIButton *)sender;
@@ -30,10 +31,15 @@
         return nil;
     }
 
-    _game = [Game new];
-    _game.delegate = self;
-
     return self;
+}
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+
+    self.game = [Game new];
+    self.game.delegate = self;
 }
 
 - (IBAction)buttonPressed:(UIButton *)sender
@@ -44,7 +50,7 @@
 - (IBAction)resetGame:(UIBarButtonItem *)sender
 {
     for (UIButton *button in self.buttons) {
-        [button setTitle:@"Button" forState:UIControlStateNormal];
+        [button setImage:nil forState:UIControlStateNormal];
     }
 
     [self.game resetGame];
@@ -55,7 +61,11 @@
 - (void)addMark:(GameMark *)mark atIndex:(NSInteger)index
 {
     UIButton *button = self.buttons[index];
-    [button setTitle:mark.description forState:UIControlStateNormal];
+    [button setImage:mark.image forState:UIControlStateNormal];
 }
 
+- (void)gameStateChanged:(NSString *)description
+{
+    self.gameStateDescriptionLabel.text = description;
+}
 @end

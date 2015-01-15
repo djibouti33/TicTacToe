@@ -24,14 +24,27 @@
         return nil;
     }
 
-    [self resetGame];
+    [self addObserver:self
+           forKeyPath:NSStringFromSelector(@selector(delegate))
+              options:NSKeyValueObservingOptionNew
+              context:nil];
 
     return self;
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    NSString *delegateKeyPath = NSStringFromSelector(@selector(delegate));
+    if ([keyPath isEqualToString:delegateKeyPath]) {
+        [self resetGame];
+        [self removeObserver:self forKeyPath:delegateKeyPath];
+    }
 }
 
 - (void)resetGame
 {
     self.board = [GameBoard new];
+    [self.delegate gameStateChanged:[self.board gameStateDescription]];
 }
 
 - (void)moveMadeAtIndex:(NSInteger)index
@@ -151,23 +164,7 @@
 - (void)checkForGameOver
 {
     [self.board updateGameStateForWin];
-
-    switch (self.board.currentGameState) {
-        case GameState_XWin:
-            NSLog(@"Congratulations on beating the computer, but you might want to look for a different job.");
-            break;
-
-        case GameState_OWin:
-            NSLog(@"Bummer! But you kind of expected that, didn't you?");
-            break;
-
-        case GameState_Tie:
-            NSLog(@"A valiant effort");
-            break;
-
-        default:
-            break;
-    }
+    [self.delegate gameStateChanged:[self.board gameStateDescription]];
 }
 
 @end

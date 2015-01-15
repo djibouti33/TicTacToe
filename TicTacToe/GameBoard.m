@@ -137,4 +137,29 @@
     self.currentGameState = ( self.currentGameState == GameState_XTurn ? GameState_OTurn : GameState_XTurn );
 }
 
+- (NSString *)gameStateDescription
+{
+    switch (self.currentGameState) {
+        case GameState_XTurn:
+            return @"Your Turn";
+            break;
+
+        case GameState_OTurn:
+            return @"Computer's Turn";
+            break;
+
+        case GameState_XWin:
+            return @"Congratulations on beating the computer, but you might want to look for a different job.";
+            break;
+
+        case GameState_OWin:
+            return @"Bummer! To be expected though.";
+            break;
+
+        case GameState_Tie:
+            return @"A valiant effort. The best you can do, really.";
+            break;
+    }
+}
+
 @end

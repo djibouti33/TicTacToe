@@ -48,15 +48,15 @@
 {
     switch (self.markType) {
         case MarkTypeX:;
-            return [UIImage imageNamed:@"xImage"];
+            return [UIImage imageNamed:@"xMark"];
             break;
 
         case MarkTypeO:
-            return [UIImage imageNamed:@"oImage"];
+            return [UIImage imageNamed:@"oMark"];
             break;
 
         case MarkTypeNone:
-            return [UIImage imageNamed:@"noneImage"];
+            return nil;
             break;
     }
 }

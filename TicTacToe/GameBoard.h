@@ -28,5 +28,6 @@ typedef NS_ENUM(NSUInteger, GameState) {
 - (NSString *)marksAtIndicies:(NSArray *)indicies;
 - (BOOL)containsValidMarkAtIndex:(NSInteger)index;
 - (void)placeMark:(GameMark *)mark atIndex:(NSInteger)index;
+- (NSString *)gameStateDescription;
 
 @end

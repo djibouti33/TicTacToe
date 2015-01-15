@@ -14,6 +14,7 @@
 
 @protocol GameDelegate <NSObject>
 - (void)addMark:(GameMark *)mark atIndex:(NSInteger)index;
+- (void)gameStateChanged:(NSString *)description;
 @end
 
 @interface Game : NSObject
