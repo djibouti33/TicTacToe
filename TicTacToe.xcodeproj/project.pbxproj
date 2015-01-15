@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A0587481A678EAA00CE818D /* GameBoard.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A0587471A678EAA00CE818D /* GameBoard.m */; };
 		0A3811B71A60FA2000910067 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A3811B61A60FA2000910067 /* main.m */; };
 		0A3811BA1A60FA2000910067 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A3811B91A60FA2000910067 /* AppDelegate.m */; };
 		0A3811BD1A60FA2000910067 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A3811BC1A60FA2000910067 /* ViewController.m */; };
@@ -30,6 +31,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0A0587461A678EAA00CE818D /* GameBoard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameBoard.h; sourceTree = "<group>"; };
+		0A0587471A678EAA00CE818D /* GameBoard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GameBoard.m; sourceTree = "<group>"; };
 		0A3811B11A60FA2000910067 /* TicTacToe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TicTacToe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A3811B51A60FA2000910067 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0A3811B61A60FA2000910067 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -90,6 +93,8 @@
 		0A3811B31A60FA2000910067 /* TicTacToe */ = {
 			isa = PBXGroup;
 			children = (
+				0A0587461A678EAA00CE818D /* GameBoard.h */,
+				0A0587471A678EAA00CE818D /* GameBoard.m */,
 				0A3811B81A60FA2000910067 /* AppDelegate.h */,
 				0A3811B91A60FA2000910067 /* AppDelegate.m */,
 				0A3811BB1A60FA2000910067 /* ViewController.h */,
@@ -238,6 +243,7 @@
 				0A3811BD1A60FA2000910067 /* ViewController.m in Sources */,
 				0A3811BA1A60FA2000910067 /* AppDelegate.m in Sources */,
 				0A3811B71A60FA2000910067 /* main.m in Sources */,
+				0A0587481A678EAA00CE818D /* GameBoard.m in Sources */,
 				0A3811DC1A60FA3A00910067 /* Game.m in Sources */,
 				0A3811DF1A60FA5500910067 /* GameState.m in Sources */,
 			);

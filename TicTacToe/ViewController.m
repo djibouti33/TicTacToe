@@ -47,7 +47,7 @@
         [button setTitle:@"Button" forState:UIControlStateNormal];
     }
 
-    [self.game newBoard];
+    [self.game resetGame];
 }
 
 #pragma mark - GameDelegate

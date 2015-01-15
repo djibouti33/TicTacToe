@@ -8,13 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-typedef NS_ENUM(NSUInteger, GameState) {
-    GameState_XTurn,
-    GameState_OTurn,
-    GameState_XWin,
-    GameState_OWin,
-    GameState_Tie
-};
+#import "GameBoard.h"
 
 @class GameMark;
 
@@ -25,12 +19,10 @@ typedef NS_ENUM(NSUInteger, GameState) {
 
 @interface Game : NSObject
 
-@property (nonatomic, assign) GameState currentGameState;
-@property (nonatomic, strong) NSMutableArray *board;
+@property (nonatomic, strong) GameBoard *board;
 @property (nonatomic, assign) id<GameDelegate> delegate;
 
 - (void)pressedSquare:(NSInteger)index;
-- (NSMutableArray *)newBoard;
-
+- (void)resetGame;
 
 @end
