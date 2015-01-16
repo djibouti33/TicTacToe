@@ -20,7 +20,7 @@ typedef NS_ENUM(NSUInteger, GameState) {
 
 @interface GameBoard : NSObject <NSCopying>
 
-@property (nonatomic, assign) GameState currentGameState;
+@property (nonatomic, assign, readonly) GameState currentGameState;
 
 - (NSArray *)availableMoves;
 - (BOOL)allMovesTaken;

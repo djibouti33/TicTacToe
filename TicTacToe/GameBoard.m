@@ -12,7 +12,7 @@
 
 @interface GameBoard ()
 @property (nonatomic, strong) NSMutableArray *moves;
-
+@property (nonatomic, assign) GameState currentGameState;
 @end
 
 @implementation GameBoard

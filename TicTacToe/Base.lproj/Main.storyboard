@@ -45,10 +45,10 @@
                                     </mask>
                                 </variation>
                             </toolbar>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Igc-0m-EVW">
+                            <view contentMode="scaleToFill" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Igc-0m-EVW">
                                 <rect key="frame" x="41" y="0.0" width="319" height="481"/>
                                 <subviews>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="egg" translatesAutoresizingMaskIntoConstraints="NO" id="tBT-6F-B9l">
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" ambiguous="YES" misplaced="YES" image="egg" translatesAutoresizingMaskIntoConstraints="NO" id="tBT-6F-B9l">
                                         <rect key="frame" x="20" y="20" width="279" height="441"/>
                                     </imageView>
                                     <button opaque="NO" contentMode="scaleToFill" ambiguous="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="z6G-hW-5ww">
@@ -544,10 +544,10 @@
                                 <exclude reference="H2v-uC-glr"/>
                             </mask>
                             <mask key="constraints">
-                                <exclude reference="mAb-rT-4P7"/>
-                                <exclude reference="uUq-Se-TVC"/>
                                 <exclude reference="kfb-lL-cYm"/>
                                 <exclude reference="D3a-S3-iAw"/>
+                                <exclude reference="mAb-rT-4P7"/>
+                                <exclude reference="uUq-Se-TVC"/>
                                 <exclude reference="WQ0-Pa-9IC"/>
                                 <exclude reference="wFx-s1-QIM"/>
                             </mask>
@@ -558,10 +558,10 @@
                                 <include reference="H2v-uC-glr"/>
                             </mask>
                             <mask key="constraints">
-                                <include reference="mAb-rT-4P7"/>
-                                <include reference="uUq-Se-TVC"/>
                                 <include reference="kfb-lL-cYm"/>
                                 <include reference="D3a-S3-iAw"/>
+                                <include reference="mAb-rT-4P7"/>
+                                <include reference="uUq-Se-TVC"/>
                                 <include reference="WQ0-Pa-9IC"/>
                                 <include reference="wFx-s1-QIM"/>
                             </mask>
